@@ -1,0 +1,12 @@
+NumerOfMark=0
+HighMark=0
+LowMark=100
+Total=0
+
+while True:
+    #print("Enter 999 to finish")
+#print("Marks must be in the range 0-100,enter next mark")
+>Mark = int(imput("Enter mark: "))
+ 
+ If Mark !=999: 
+     While not (
