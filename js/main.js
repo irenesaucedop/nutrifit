@@ -192,18 +192,32 @@ async function logout() {
 
 // Load User Profile
 async function loadUserProfile() {
-  if (!currentUser) return;
-  
-  const result = await getUserProfile(currentUser.uid);
-  
-  if (result.success) {
-    const profile = result.data;
+  if (!currentUser) {
+    // Show default dashboard if no user profile
     const dashboardContent = document.getElementById('dashboard-content');
-    
     if (dashboardContent) {
       dashboardContent.innerHTML = `
         <div class="card">
-          <h2>Welcome, ${profile.email}!</h2>
+          <h2>Welcome!</h2>
+          <p>Complete your profile to get started.</p>
+          <button class="btn btn-primary" onclick="window.showPage('onboarding')">Complete Profile</button>
+        </div>
+      `;
+    }
+    return;
+  }
+  
+  try {
+    const result = await getUserProfile(currentUser.uid);
+    const dashboardContent = document.getElementById('dashboard-content');
+    
+    if (!dashboardContent) return;
+    
+    if (result.success && result.data) {
+      const profile = result.data;
+      dashboardContent.innerHTML = `
+        <div class="card">
+          <h2>Welcome, ${profile.email || currentUser.email}!</h2>
           <div style="margin: 1rem 0;">
             <p><strong>Age:</strong> ${profile.age || 'Not set'}</p>
             <p><strong>Weight:</strong> ${profile.weight || 'Not set'} lbs</p>
@@ -214,6 +228,27 @@ async function loadUserProfile() {
             <p><strong>Dietary Preference:</strong> ${profile.dietaryPreference || 'Not set'}</p>
           </div>
           <button class="btn btn-primary" onclick="window.showPage('onboarding')">Edit Profile</button>
+        </div>
+      `;
+    } else {
+      // Profile not found - show prompt to complete it
+      dashboardContent.innerHTML = `
+        <div class="card">
+          <h2>Welcome, ${currentUser.email}!</h2>
+          <p style="color: var(--gray-600); margin: 1rem 0;">Your profile is not complete yet.</p>
+          <button class="btn btn-primary" onclick="window.showPage('onboarding')">Complete Your Profile</button>
+        </div>
+      `;
+    }
+  } catch (error) {
+    console.error('Error loading profile:', error);
+    const dashboardContent = document.getElementById('dashboard-content');
+    if (dashboardContent) {
+      dashboardContent.innerHTML = `
+        <div class="card">
+          <h2>Welcome!</h2>
+          <p style="color: var(--gray-600);">Unable to load profile. Please try again.</p>
+          <button class="btn btn-primary" onclick="window.showPage('onboarding')">Complete Profile</button>
         </div>
       `;
     }
