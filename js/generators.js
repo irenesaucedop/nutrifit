@@ -10,7 +10,7 @@ export async function initializeGenerators() {
 }
 
 // Calculate daily caloric needs (Harris-Benedict formula)
-export function calculateCalories(age, weight, height, gender, activityLevel) {
+export function calculateCalories(age, weight, height, gender, activityLevel, fitnessGoal) {
   let bmr;
   
   if (gender === 'Male') {
@@ -36,15 +36,29 @@ export function calculateCalories(age, weight, height, gender, activityLevel) {
     'maintenance': 0
   };
   
-  return Math.round(tdee + (goalAdjustment['weight loss'] || 0));
+  return Math.round(tdee + (goalAdjustment[fitnessGoal] || 0));
 }
 
-// Calculate macros (40% carbs, 30% protein, 30% fat)
-export function calculateMacros(calories) {
+// Calculate macros based on fitness goal
+export function calculateMacros(calories, fitnessGoal) {
+  let macroRatios;
+  
+  // Different macro ratios for different goals
+  if (fitnessGoal === 'muscle gain') {
+    // Higher protein for muscle building
+    macroRatios = { protein: 0.35, carbs: 0.45, fat: 0.20 };
+  } else if (fitnessGoal === 'weight loss') {
+    // Moderate protein, lower carbs
+    macroRatios = { protein: 0.35, carbs: 0.35, fat: 0.30 };
+  } else {
+    // Maintenance - balanced
+    macroRatios = { protein: 0.30, carbs: 0.40, fat: 0.30 };
+  }
+  
   return {
-    protein: Math.round((calories * 0.30) / 4), // 4 cal per gram
-    carbs: Math.round((calories * 0.40) / 4),   // 4 cal per gram
-    fat: Math.round((calories * 0.30) / 9)      // 9 cal per gram
+    protein: Math.round((calories * macroRatios.protein) / 4), // 4 cal per gram
+    carbs: Math.round((calories * macroRatios.carbs) / 4),     // 4 cal per gram
+    fat: Math.round((calories * macroRatios.fat) / 9)          // 9 cal per gram
   };
 }
 
@@ -80,28 +94,81 @@ const mealDatabase = {
   ]
 };
 
-// Workout database
-const workoutDatabase = {
-  'strength': [
-    { name: 'Push-ups', sets: 3, reps: 12, rest: 60, difficulty: 'beginner' },
-    { name: 'Squats', sets: 4, reps: 10, rest: 90, difficulty: 'beginner' },
-    { name: 'Bench press', sets: 4, reps: 8, rest: 120, difficulty: 'intermediate' },
-    { name: 'Deadlifts', sets: 3, reps: 5, rest: 120, difficulty: 'intermediate' },
-    { name: 'Pull-ups', sets: 3, reps: 8, rest: 90, difficulty: 'advanced' }
-  ],
-  'cardio': [
-    { name: 'Running (30 min)', duration: 30, intensity: 'moderate', difficulty: 'beginner' },
-    { name: 'Cycling (45 min)', duration: 45, intensity: 'moderate', difficulty: 'beginner' },
-    { name: 'HIIT (20 min)', duration: 20, intensity: 'high', difficulty: 'intermediate' },
-    { name: 'Swimming (40 min)', duration: 40, intensity: 'moderate', difficulty: 'beginner' },
-    { name: 'Jump rope (15 min)', duration: 15, intensity: 'high', difficulty: 'intermediate' }
-  ],
-  'flexibility': [
-    { name: 'Yoga (30 min)', duration: 30, intensity: 'low', difficulty: 'beginner' },
-    { name: 'Stretching (15 min)', duration: 15, intensity: 'low', difficulty: 'beginner' },
-    { name: 'Pilates (45 min)', duration: 45, intensity: 'moderate', difficulty: 'intermediate' },
-    { name: 'Tai Chi (30 min)', duration: 30, intensity: 'low', difficulty: 'beginner' }
-  ]
+// Comprehensive Gym Workout Database - Organized by Goal
+const gymWorkoutDatabase = {
+  'muscle gain': {
+    'chest': [
+      { name: 'Barbell Bench Press', sets: 4, reps: 6, rest: 120, equipment: 'barbell', focus: 'chest' },
+      { name: 'Incline Dumbbell Press', sets: 3, reps: 8, rest: 90, equipment: 'dumbbell', focus: 'chest' },
+      { name: 'Chest Fly Machine', sets: 3, reps: 10, rest: 60, equipment: 'machine', focus: 'chest' },
+      { name: 'Dips', sets: 3, reps: 8, rest: 90, equipment: 'bodyweight', focus: 'chest' }
+    ],
+    'back': [
+      { name: 'Deadlifts', sets: 4, reps: 5, rest: 120, equipment: 'barbell', focus: 'back' },
+      { name: 'Barbell Rows', sets: 4, reps: 6, rest: 120, equipment: 'barbell', focus: 'back' },
+      { name: 'Pull-ups', sets: 3, reps: 8, rest: 90, equipment: 'bodyweight', focus: 'back' },
+      { name: 'Lat Pulldown', sets: 3, reps: 10, rest: 60, equipment: 'machine', focus: 'back' }
+    ],
+    'legs': [
+      { name: 'Barbell Squats', sets: 4, reps: 6, rest: 120, equipment: 'barbell', focus: 'legs' },
+      { name: 'Leg Press', sets: 3, reps: 8, rest: 100, equipment: 'machine', focus: 'legs' },
+      { name: 'Romanian Deadlifts', sets: 3, reps: 8, rest: 90, equipment: 'barbell', focus: 'legs' },
+      { name: 'Leg Curls', sets: 3, reps: 10, rest: 60, equipment: 'machine', focus: 'legs' }
+    ],
+    'shoulders': [
+      { name: 'Overhead Press', sets: 4, reps: 6, rest: 120, equipment: 'barbell', focus: 'shoulders' },
+      { name: 'Dumbbell Shoulder Press', sets: 3, reps: 8, rest: 90, equipment: 'dumbbell', focus: 'shoulders' },
+      { name: 'Lateral Raises', sets: 3, reps: 12, rest: 60, equipment: 'dumbbell', focus: 'shoulders' },
+      { name: 'Machine Shoulder Press', sets: 3, reps: 10, rest: 60, equipment: 'machine', focus: 'shoulders' }
+    ],
+    'arms': [
+      { name: 'Barbell Curls', sets: 3, reps: 8, rest: 90, equipment: 'barbell', focus: 'biceps' },
+      { name: 'Tricep Dips', sets: 3, reps: 8, rest: 90, equipment: 'bodyweight', focus: 'triceps' },
+      { name: 'Hammer Curls', sets: 3, reps: 10, rest: 60, equipment: 'dumbbell', focus: 'biceps' },
+      { name: 'Cable Tricep Pushdown', sets: 3, reps: 12, rest: 60, equipment: 'cable', focus: 'triceps' }
+    ]
+  },
+  'weight loss': {
+    'full body cardio': [
+      { name: 'Treadmill Running (HIIT)', duration: 25, intensity: 'high', equipment: 'machine', focus: 'cardio' },
+      { name: 'Rowing Machine (Steady State)', duration: 30, intensity: 'moderate', equipment: 'machine', focus: 'cardio' },
+      { name: 'Stair Climber', duration: 20, intensity: 'high', equipment: 'machine', focus: 'cardio' },
+      { name: 'Stationary Bike (HIIT)', duration: 20, intensity: 'high', equipment: 'machine', focus: 'cardio' }
+    ],
+    'circuit training': [
+      { name: 'Kettlebell Swings', sets: 3, reps: 15, rest: 45, equipment: 'kettlebell', focus: 'full-body' },
+      { name: 'Burpees', sets: 3, reps: 12, rest: 45, equipment: 'bodyweight', focus: 'full-body' },
+      { name: 'Battle Ropes', sets: 3, duration: 30, rest: 45, equipment: 'ropes', focus: 'cardio' },
+      { name: 'Box Jumps', sets: 3, reps: 10, rest: 60, equipment: 'box', focus: 'legs' },
+      { name: 'Medicine Ball Slams', sets: 3, reps: 12, rest: 45, equipment: 'medicine-ball', focus: 'full-body' }
+    ],
+    'metabolic training': [
+      { name: 'Dumbbell Complex', sets: 3, reps: 10, rest: 60, equipment: 'dumbbell', focus: 'full-body' },
+      { name: 'Jump Rope (HIIT)', duration: 15, intensity: 'high', equipment: 'rope', focus: 'cardio' },
+      { name: 'Mountain Climbers', sets: 3, reps: 20, rest: 45, equipment: 'bodyweight', focus: 'core' },
+      { name: 'Assault Bike', duration: 20, intensity: 'high', equipment: 'machine', focus: 'cardio' }
+    ]
+  },
+  'maintenance': {
+    'balanced strength': [
+      { name: 'Barbell Bench Press', sets: 3, reps: 8, rest: 90, equipment: 'barbell', focus: 'chest' },
+      { name: 'Barbell Rows', sets: 3, reps: 8, rest: 90, equipment: 'barbell', focus: 'back' },
+      { name: 'Barbell Squats', sets: 3, reps: 8, rest: 90, equipment: 'barbell', focus: 'legs' },
+      { name: 'Overhead Press', sets: 3, reps: 8, rest: 90, equipment: 'barbell', focus: 'shoulders' }
+    ],
+    'moderate cardio': [
+      { name: 'Treadmill Running (Steady)', duration: 30, intensity: 'moderate', equipment: 'machine', focus: 'cardio' },
+      { name: 'Elliptical Machine', duration: 30, intensity: 'moderate', equipment: 'machine', focus: 'cardio' },
+      { name: 'Rowing Machine', duration: 25, intensity: 'moderate', equipment: 'machine', focus: 'cardio' },
+      { name: 'Stationary Bike', duration: 30, intensity: 'moderate', equipment: 'machine', focus: 'cardio' }
+    ],
+    'functional training': [
+      { name: 'Functional Movement Complex', sets: 3, reps: 12, rest: 60, equipment: 'mixed', focus: 'full-body' },
+      { name: 'Farmer Carries', sets: 3, duration: 40, rest: 60, equipment: 'dumbbell', focus: 'core' },
+      { name: 'Sled Push', sets: 3, duration: 40, rest: 60, equipment: 'sled', focus: 'legs' },
+      { name: 'TRX Suspension Training', sets: 3, reps: 12, rest: 60, equipment: 'suspension', focus: 'full-body' }
+    ]
+  }
 };
 
 // Generate personalized meal plan
@@ -121,19 +188,65 @@ export function generateMealPlan(dietaryPref, daysCount = 7) {
   return plan;
 }
 
-// Generate personalized workout plan
-export function generateWorkoutPlan(fitnessGoal, daysCount = 7) {
-  const types = Object.keys(workoutDatabase);
+// Generate personalized workout plan based on goal
+export function generateWorkoutPlan(fitnessGoal, daysCount = 7, fitnessLevel = 'intermediate') {
   const plan = [];
+  const workoutsByGoal = gymWorkoutDatabase[fitnessGoal];
+  
+  if (!workoutsByGoal) {
+    console.warn(`No workouts found for goal: ${fitnessGoal}`);
+    return plan;
+  }
+  
+  const categories = Object.keys(workoutsByGoal);
   
   for (let day = 1; day <= daysCount; day++) {
-    const workoutType = types[Math.floor(Math.random() * types.length)];
-    const workouts = workoutDatabase[workoutType] || [];
-    const workout = workouts[Math.floor(Math.random() * workouts.length)];
-    plan.push({ day, type: workoutType, ...workout });
+    // Cycle through different categories for variety
+    const categoryIndex = (day - 1) % categories.length;
+    const category = categories[categoryIndex];
+    const categoryWorkouts = workoutsByGoal[category];
+    
+    if (categoryWorkouts && categoryWorkouts.length > 0) {
+      const workout = categoryWorkouts[Math.floor(Math.random() * categoryWorkouts.length)];
+      plan.push({
+        day,
+        category,
+        goal: fitnessGoal,
+        ...workout
+      });
+    }
   }
   
   return plan;
+}
+
+// Get workout recommendations based on user profile
+export function getWorkoutRecommendations(fitnessGoal) {
+  const recommendations = {
+    'muscle gain': {
+      frequency: '5-6 days per week',
+      focus: 'Progressive overload with compound movements',
+      tip: 'Focus on heavy weights with 6-10 reps. Rest 2-3 minutes between sets.',
+      splits: 'Push/Pull/Legs (PPL) or Upper/Lower splits recommended',
+      recovery: 'Ensure 7-9 hours of sleep daily for muscle recovery'
+    },
+    'weight loss': {
+      frequency: '4-5 days per week',
+      focus: 'High-intensity interval training (HIIT) and circuit training',
+      tip: 'Keep rest periods short (30-60 seconds) to maintain elevated heart rate.',
+      splits: 'Full-body circuits or metabolic conditioning',
+      recovery: 'Active recovery days are important; light walking or yoga OK'
+    },
+    'maintenance': {
+      frequency: '3-4 days per week',
+      focus: 'Balanced mix of strength and cardio',
+      tip: 'Maintain current fitness levels with consistent training.',
+      splits: 'Full-body or upper/lower splits',
+      recovery: 'Regular rest days for sustainability'
+    }
+  };
+  
+  return recommendations[fitnessGoal] || recommendations['maintenance'];
 }
 
 // Save meal plan to Firestore
@@ -157,12 +270,13 @@ export async function saveMealPlan(userId, mealPlan, calories, macros) {
 }
 
 // Save workout plan to Firestore
-export async function saveWorkoutPlan(userId, workoutPlan) {
+export async function saveWorkoutPlan(userId, workoutPlan, fitnessGoal) {
   try {
     const { doc, setDoc } = await import('https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js');
     
     await setDoc(doc(db, 'users', userId, 'workoutPlans', new Date().toISOString()), {
       workoutPlan,
+      fitnessGoal,
       createdAt: new Date(),
       status: 'active'
     });
