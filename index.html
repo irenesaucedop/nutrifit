@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Nutrift - Personalized Nutrition & Fitness</title>
   <link rel="stylesheet" href="css/styles.css">
+  <!-- Chart.js for progress visualization -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
 </head>
 <body>
   <!-- Navigation -->
@@ -205,25 +207,117 @@
 
     <!-- Meals Page (Phase 2) -->
     <div id="meals" class="page">
-      <h1>Personalized Meal Plans</h1>
-      <div class="card">
-        <p style="color: var(--gray-600); font-style: italic;">Coming soon in Phase 2...</p>
+      <h1>🍽️ Personalized Meal Plans</h1>
+      <div id="meals-content" class="card">
+        <button class="btn btn-primary" id="generate-meal-plan" onclick="window.handleGenerateMealPlan()">
+          Generate Meal Plan
+        </button>
       </div>
     </div>
 
     <!-- Workouts Page (Phase 2) -->
     <div id="workouts" class="page">
-      <h1>Personalized Workouts</h1>
-      <div class="card">
-        <p style="color: var(--gray-600); font-style: italic;">Coming soon in Phase 2...</p>
+      <h1>💪 Personalized Workouts</h1>
+      <div id="workouts-content" class="card">
+        <button class="btn btn-primary" id="generate-workout-plan" onclick="window.handleGenerateWorkoutPlan()">
+          Generate Workout Plan
+        </button>
       </div>
     </div>
 
     <!-- Progress Page (Phase 3) -->
     <div id="progress" class="page">
-      <h1>Track Your Progress</h1>
+      <h1>📊 Track Your Progress</h1>
+      
+      <!-- Progress Summary Cards -->
+      <div class="grid">
+        <div class="card stats-card">
+          <h3>📈 Current Weight</h3>
+          <div class="stat-value" id="current-weight">--</div>
+          <p class="stat-label">lbs</p>
+        </div>
+        <div class="card stats-card">
+          <h3>⬇️ Weight Change</h3>
+          <div class="stat-value" id="weight-change">--</div>
+          <p class="stat-label">lbs</p>
+        </div>
+        <div class="card stats-card">
+          <h3>🔥 Total Workouts</h3>
+          <div class="stat-value" id="total-workouts">0</div>
+          <p class="stat-label">completed</p>
+        </div>
+        <div class="card stats-card">
+          <h3>✅ Consistency</h3>
+          <div class="stat-value" id="consistency-score">0%</div>
+          <p class="stat-label">this week</p>
+        </div>
+      </div>
+
+      <!-- Weight Tracking Section -->
       <div class="card">
-        <p style="color: var(--gray-600); font-style: italic;">Coming soon in Phase 3...</p>
+        <h2>Log Your Weight</h2>
+        <form id="weight-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="log-weight">Weight (lbs)</label>
+              <input type="number" id="log-weight" step="0.1" placeholder="175" required>
+            </div>
+            <div class="form-group">
+              <label for="weight-date">Date</label>
+              <input type="date" id="weight-date" required>
+            </div>
+            <div class="form-group">
+              <label>&nbsp;</label>
+              <button type="submit" class="btn btn-primary">Log Weight</button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Workout Tracking Section -->
+      <div class="card">
+        <h2>Log Your Workout</h2>
+        <form id="workout-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="workout-name">Workout Name</label>
+              <input type="text" id="workout-name" placeholder="e.g., Morning Run" required>
+            </div>
+            <div class="form-group">
+              <label for="workout-duration">Duration (minutes)</label>
+              <input type="number" id="workout-duration" min="1" placeholder="30" required>
+            </div>
+            <div class="form-group">
+              <label for="workout-date">Date</label>
+              <input type="date" id="workout-date" required>
+            </div>
+            <div class="form-group">
+              <label>&nbsp;</label>
+              <button type="submit" class="btn btn-primary">Log Workout</button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Progress Charts -->
+      <div class="card">
+        <h2>Weight Progress Chart</h2>
+        <canvas id="weight-chart" height="80"></canvas>
+      </div>
+
+      <div class="card">
+        <h2>Workout History</h2>
+        <div id="workout-history">
+          <p style="color: var(--gray-600); font-style: italic;">No workouts logged yet. Start tracking to see your progress!</p>
+        </div>
+      </div>
+
+      <!-- Recent Progress Log -->
+      <div class="card">
+        <h2>Recent Activity</h2>
+        <div id="recent-activity">
+          <p style="color: var(--gray-600); font-style: italic;">No activity yet. Start logging to see your progress here!</p>
+        </div>
       </div>
     </div>
 
@@ -231,5 +325,7 @@
 
   <!-- Scripts -->
   <script type="module" src="js/main.js"></script>
+  <script type="module" src="js/phase2.js"></script>
+  <script type="module" src="js/phase3.js"></script>
 </body>
 </html>
